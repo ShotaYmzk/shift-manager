@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase"; // Supabaseクライアントをインポート
 
-interface Shift {
-  id?: number;
-  name: string;
-  date: string;
-  shift: string;
-}
+// interface Shift {
+//   id?: number;
+//   name: string;
+//   date: string;
+//   shift: string;
+// }
 
 export default function Home() {
   const [name, setName] = useState<string>("");
@@ -20,7 +20,7 @@ export default function Home() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("shifts")
       .insert([{ name, date, shift }]);
 
