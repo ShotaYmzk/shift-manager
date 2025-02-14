@@ -1,53 +1,59 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link"; // リンク用
-
+import Link from "next/link"; // 管理者画面リンク用
 import { supabase } from "./lib/supabase";
 
 interface Shift {
   date: string;
-  shift: string;
+  startTime: string;
+  endTime: string;
 }
 
 export default function Home() {
-  const [name, setName] = useState<string>(""); // 名前の入力を1回だけに
-  const [shifts, setShifts] = useState<Shift[]>([{ date: "", shift: "" }]);
+  const [name, setName] = useState<string>("");
+  const [shifts, setShifts] = useState<Shift[]>([{ date: "", startTime: "", endTime: "" }]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
+  // シフトの値を変更
   const handleShiftChange = (index: number, field: keyof Shift, value: string) => {
     const newShifts = [...shifts];
     newShifts[index][field] = value;
     setShifts(newShifts);
   };
 
+  // シフトを追加
   const addShift = () => {
-    setShifts([...shifts, { date: "", shift: "" }]);
+    setShifts([...shifts, { date: "", startTime: "", endTime: "" }]);
   };
 
+  // シフトを削除
   const removeShift = (index: number) => {
     setShifts(shifts.filter((_, i) => i !== index));
   };
 
+  // フォーム送信処理
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // 名前をすべてのシフトに追加して送信
+    // シフトデータを Supabase に送信
     const dataToSubmit = shifts.map((shift) => ({
       name,
-      ...shift,
+      date: shift.date,
+      start_time: shift.startTime,
+      end_time: shift.endTime,
     }));
 
     const { error } = await supabase.from("shifts").insert(dataToSubmit);
 
     if (error) {
       console.error("エラー:", error);
-      alert("エラーが発生しました。もう一度お試しください。");
+      alert("送信に失敗しました。もう一度お試しください。");
     } else {
       alert("シフトが登録されました！");
-      setName(""); // リセット
-      setShifts([{ date: "", shift: "" }]); // リセット
+      setName("");
+      setShifts([{ date: "", startTime: "", endTime: "" }]); // リセット
     }
     setIsSubmitting(false);
   };
@@ -84,20 +90,28 @@ export default function Home() {
                 />
               </div>
               <div>
-                <label className="block text-gray-700 font-medium">シフト:</label>
-                <select
-                  value={shift.shift}
+                <label className="block text-gray-700 font-medium">開始時間:</label>
+                <input
+                  type="time"
+                  value={shift.startTime}
                   onChange={(e) =>
-                    handleShiftChange(index, "shift", e.target.value)
+                    handleShiftChange(index, "startTime", e.target.value)
                   }
                   required
                   className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                  <option value="">シフトを選択</option>
-                  <option value="morning">朝</option>
-                  <option value="afternoon">昼</option>
-                  <option value="night">夜</option>
-                </select>
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 font-medium">終了時間:</label>
+                <input
+                  type="time"
+                  value={shift.endTime}
+                  onChange={(e) =>
+                    handleShiftChange(index, "endTime", e.target.value)
+                  }
+                  required
+                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
               </div>
               {index > 0 && (
                 <button
@@ -130,8 +144,8 @@ export default function Home() {
           </button>
         </form>
         <div className="mt-6">
-          <Link href="/admin"　className="block text-center bg-gray-700 text-white py-2 px-4 rounded-md hover:bg-gray-800">
-              管理者画面へ
+          <Link href="/admin" className="block text-center bg-gray-700 text-white py-2 px-4 rounded-md hover:bg-gray-800">
+            管理者画面へ
           </Link>
         </div>
       </div>
